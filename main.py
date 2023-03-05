@@ -88,7 +88,6 @@ def generate_assistant_response(query):
     except Exception as e:
         logger.error(f'Error generating Google Assistant response: {e}')
         return ''
-``
 def main():
     # Set up the Telegram bot
     updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
