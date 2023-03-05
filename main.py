@@ -31,6 +31,10 @@ chatbot = ChatBot('MyChatBot')
 trainer = ChatterBotCorpusTrainer(chatbot)
 trainer.train('chatterbot.corpus.english')
 
+# Set up gRPC channel and assistant stub
+grpc_channel = google.auth.transport.grpc.secure_authorized_channel(credentials, grpc.Empty())
+assistant = embedded_assistant_pb2_grpc.EmbeddedAssistantStub(grpc_channel)
+
 def process_message(update, context):
     """Processes a message received by the Telegram bot."""
     message = update.message.text
@@ -49,10 +53,6 @@ def process_message(update, context):
 def generate_assistant_response(query):
     """Generates a response using the Google Assistant API."""
     try:
-        # Set up gRPC channel and assistant stub
-        grpc_channel = google.auth.transport.grpc.secure_authorized_channel(credentials, grpc.Empty())
-        assistant = embedded_assistant_pb2_grpc.EmbeddedAssistantStub(grpc_channel)
-
         # Set up the assistant request
         assistant_config = embedded_assistant_pb2.AssistConfig(
             audio_out_config=embedded_assistant_pb2.AudioOutConfig(
@@ -85,38 +85,29 @@ def generate_assistant_response(query):
         # If no response is found, return an empty string
         return ''
     except Exception as e:
-        logger.error(f'Error generating assistant response: {e}')
+        logger.error(f'Error generating Google Assistant response: {e}')
         return ''
-
-def start_bot():
-    """Starts the Telegram bot."""
-
-# Set up the Telegram bot
+``
 def main():
-    updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
+    # Set up the Telegram bot
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
 
-    # Set up command handlers
-    start_handler = CommandHandler('start', start)
-    help_handler = CommandHandler('help', help)
-    dispatcher.add_handler(start_handler)
-    dispatcher.add_handler(help_handler)
+    # Set up the message handler
+    message_handler = MessageHandler(Filters.text & (~Filters.command), process_message)
+    dp.add_handler(message_handler)
 
-    # Set up message handler
-    message_handler = MessageHandler(Filters.text & ~Filters.command, process_message)
-    dispatcher.add_handler(message_handler)
+    # Set up the command handlers
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CommandHandler('help', help_command))
+    dp.add_handler(CommandHandler('about', about))
 
-    # Start the bot
+    # Start the Telegram bot
     updater.start_polling()
+    logger.info('Telegram bot started')
+
+    # Run the bot until Ctrl-C is pressed or the process is otherwise interrupted
     updater.idle()
-
-# Define the start command
-def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hi, I'm your personal assistant. How can I help you?")
-
-# Define the help command
-def help(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="You can ask me anything and I'll do my best to help you.")
 
 if __name__ == '__main__':
     main()
