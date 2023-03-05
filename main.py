@@ -90,24 +90,22 @@ def generate_assistant_response(query):
 ``
 def main():
     # Set up the Telegram bot
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
+    updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
+    dispatcher = updater.dispatcher
 
-    # Set up the message handler
-    message_handler = MessageHandler(Filters.text & (~Filters.command), process_message)
-    dp.add_handler(message_handler)
+    # Set up handlers for processing messages and commands
+    message_handler = MessageHandler(Filters.text, process_message)
+    start_handler = CommandHandler('start', start_command)
+    help_handler = CommandHandler('help', help_command)
 
-    # Set up the command handlers
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CommandHandler('help', help_command))
-    dp.add_handler(CommandHandler('about', about))
+    # Add the handlers to the dispatcher
+    dispatcher.add_handler(message_handler)
+    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(help_handler)
 
-    # Start the Telegram bot
+    # Start the bot
     updater.start_polling()
-    logger.info('Telegram bot started')
-
-    # Run the bot until Ctrl-C is pressed or the process is otherwise interrupted
-    updater.idle()
+    logger.info("Bot started.")
 
 if __name__ == '__main__':
     main()
