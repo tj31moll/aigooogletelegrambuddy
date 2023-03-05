@@ -21,6 +21,7 @@ ASSISTANT_DEVICE_MODEL_ID = 'your-device-model-id'
 ASSISTANT_DEVICE_INSTANCE_ID = 'your-device-instance-id'
 ASSISTANT_LANGUAGE_CODE = 'en-US'
 ASSISTANT_CREDENTIALS_PATH = 'path/to/your/credentials.json'
+TELEGRAM_BOT_TOKEN = 'your-telegram-bot-token-here'
 
 with open(ASSISTANT_CREDENTIALS_PATH, 'r') as f:
     credentials_data = f.read()
