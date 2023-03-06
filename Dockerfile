@@ -13,16 +13,16 @@ RUN apt-get update && apt-get install -y \
 COPY . /app
 
 # Install the required Python packages
-COPY requirements.txt /app/
+#COPY requirements.txt /app/
 RUN apt-get install build-essential
 RUN pip install --no-cache-dir -r requirements.txt
 
 
 # Install required packages
 RUN apt-get update && \
-    apt-get install -y build-essential && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+#    apt-get install -y build-essential && \
+    apt-get clean
+#    rm -rf /var/lib/apt/lists/*
 
 # Install Python modules
 
@@ -44,10 +44,6 @@ COPY ./data /app/data
 COPY ./trainers /app/trainers
 COPY ./corpus /app/corpus
 RUN python -c "from chatterbot.trainers import ChatterBotCorpusTrainer; from chatterbot import ChatBot; chatbot = ChatBot('MyChatBot'); trainer = ChatterBotCorpusTrainer(chatbot); trainer.train('chatterbot.corpus.english')"
-RUN apt-get update && \
-    apt-get install -y build-essential && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # Set up volume for data persistence
 VOLUME /app/data
