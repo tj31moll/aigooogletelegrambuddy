@@ -1,3 +1,4 @@
+import os
 import logging
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -15,13 +16,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Set up Google Assistant credentials
-ASSISTANT_API_ENDPOINT = 'embeddedassistant.googleapis.com'
-ASSISTANT_API_VERSION = 'v1alpha2'
-ASSISTANT_DEVICE_MODEL_ID = 'your-device-model-id'
-ASSISTANT_DEVICE_INSTANCE_ID = 'your-device-instance-id'
-ASSISTANT_LANGUAGE_CODE = 'en-US'
-ASSISTANT_CREDENTIALS_PATH = 'path/to/your/credentials.json'
-TELEGRAM_BOT_TOKEN = 'your-telegram-bot-token-here'
+ASSISTANT_API_ENDPOINT = os.environ.get('ASSISTANT_API_ENDPOINT')
+ASSISTANT_API_VERSION = os.environ.get('ASSISTANT_API_VERSION')
+ASSISTANT_DEVICE_MODEL_ID = os.environ.get('ASSISTANT_DEVICE_MODEL_ID')
+ASSISTANT_DEVICE_INSTANCE_ID = os.environ.get('ASSISTANT_DEVICE_INSTANCE_ID')
+ASSISTANT_LANGUAGE_CODE = os.environ.get('ASSISTANT_LANGUAGE_CODE')
+ASSISTANT_CREDENTIALS_PATH = os.environ.get('ASSISTANT_CREDENTIALS_PATH')
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 with open(ASSISTANT_CREDENTIALS_PATH, 'r') as f:
     credentials_data = f.read()
