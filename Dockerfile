@@ -57,3 +57,4 @@ EXPOSE 3636
 
 # Run the application
 CMD ["python", "main.py"]
+
