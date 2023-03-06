@@ -13,8 +13,47 @@ RUN apt-get update && apt-get install -y \
 COPY . /app
 
 # Install the required Python packages
+COPY requirements.txt /app/
 RUN apt-get install build-essential
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Set the command to run the Python script
-CMD ["python", "my_bot.py"]
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python modules
+
+
+# Set environment variables
+ENV GOOGLE_APPLICATION_CREDENTIALS /app/credentials.json
+ENV ASSISTANT_API_ENDPOINT embeddedassistant.googleapis.com
+ENV ASSISTANT_API_VERSION v1alpha2
+ENV ASSISTANT_DEVICE_MODEL_ID your-device-model-id
+ENV ASSISTANT_DEVICE_INSTANCE_ID your-device-instance-id
+ENV ASSISTANT_LANGUAGE_CODE en-US
+ENV TELEGRAM_BOT_TOKEN your-telegram-bot-token-here
+
+# Set up Chatterbot
+RUN mkdir -p /app/data && \
+    mkdir -p /app/trainers && \
+    mkdir -p /app/corpus
+COPY ./data /app/data
+COPY ./trainers /app/trainers
+COPY ./corpus /app/corpus
+RUN python -c "from chatterbot.trainers import ChatterBotCorpusTrainer; from chatterbot import ChatBot; chatbot = ChatBot('MyChatBot'); trainer = ChatterBotCorpusTrainer(chatbot); trainer.train('chatterbot.corpus.english')"
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up volume for data persistence
+VOLUME /app/data
+
+# Expose port 3636
+EXPOSE 3636
+
+# Run the application
+CMD ["python", "main.py"]
