@@ -1,42 +1,33 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim-buster
+# Build stage
+#FROM python:3.9-alpine AS build
 
-# Set the working directory to /app
+RUN apk add --no-cache gcc musl-dev
+
 WORKDIR /app
 
-# Install gcc and python3-pip
-RUN apt-get update && apt-get install -y \
-    gcc \
-    python3-pip
+COPY requirements.txt /app/
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-# Install the required Python packages
-#COPY requirements.txt /app/
-RUN apt-get install build-essential
 RUN pip install --no-cache-dir -r requirements.txt
 
 
-# Install required packages
-RUN apt-get update && \
-#    apt-get install -y build-essential && \
-    apt-get clean
-#    rm -rf /var/lib/apt/lists/*
+# Final stage
+FROM python:3.9-alpine AS final
 
-# Install Python modules
+WORKDIR /app
 
+COPY --from=build /usr/local/lib/python3.9/site-packages/ /usr/local/lib/python3.9/site-packages/
+COPY . /app
 
-# Set environment variables
 ENV GOOGLE_APPLICATION_CREDENTIALS /app/credentials.json
-ENV ASSISTANT_API_ENDPOINT embeddedassistant.googleapis.com
-ENV ASSISTANT_API_VERSION v1alpha2
-ENV ASSISTANT_DEVICE_MODEL_ID your-device-model-id
-ENV ASSISTANT_DEVICE_INSTANCE_ID your-device-instance-id
-ENV ASSISTANT_LANGUAGE_CODE en-US
-ENV TELEGRAM_BOT_TOKEN your-telegram-bot-token-here
+ENV ASSISTANT_API_ENDPOINT $ASSISTANT_API_ENDPOINT
+ENV ASSISTANT_API_VERSION $ASSISTANT_API_VERSION
+ENV ASSISTANT_DEVICE_MODEL_ID $ASSISTANT_DEVICE_MODEL_ID
+ENV ASSISTANT_DEVICE_INSTANCE_ID $ASSISTANT_DEVICE_INSTANCE_ID
+ENV ASSISTANT_LANGUAGE_CODE $ASSISTANT_LANGUAGE_CODE
+ENV TELEGRAM_BOT_TOKEN $TELEGRAM_BOT_TOKEN
 
-# Set up Chatterbot
 RUN mkdir -p /app/data && \
     mkdir -p /app/trainers && \
     mkdir -p /app/corpus
@@ -45,12 +36,9 @@ COPY ./trainers /app/trainers
 COPY ./corpus /app/corpus
 RUN python -c "from chatterbot.trainers import ChatterBotCorpusTrainer; from chatterbot import ChatBot; chatbot = ChatBot('MyChatBot'); trainer = ChatterBotCorpusTrainer(chatbot); trainer.train('chatterbot.corpus.english')"
 
-# Set up volume for data persistence
 VOLUME /app/data
 
-# Expose port 3636
 EXPOSE 3636
 
-# Run the application
 CMD ["python", "main.py"]
 
